@@ -18,11 +18,11 @@ let timeout;
 const gapTime = 2;
 let xFloat;
 let size   = 100;
-const sMax = 20e6;	//最高为20MB/s
+const sMax = 10e6;	//最高为10MB/s
 
 const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button {
 	_init() {
-		super._init(0.0, _('My Shiny Indicator'));
+		super._init(0.0, _('Screen Net Speed'));
 
 		const stock_icon = new St.Icon({ icon_name : 'mail-send-symbolic', icon_size : 30 });
 		this.add_child(stock_icon);
@@ -46,8 +46,7 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
 		xFloat.set_content(this._canvas);
 		this._canvas.invalidate();
 
-		xFloat.set_position(monitor.width - size,
-			monitor.height - size);	 // left-down corner.
+		xFloat.set_position(0, monitor.height - size);	 // left-down corner.
 
 		xFloat.connect("button-press-event",
 			(a) => { this.horizontalMove(a); });
