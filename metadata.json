@@ -2,6 +2,7 @@
   "name": "Screen Net Speed",
   "description": "animation net speed on screen",
   "uuid": "speed@eexpss.gmail.com",
+  "gettext-domain": "screen-net-speed",
   "shell-version": [
     "40"
   ]

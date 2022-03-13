@@ -1,210 +1,196 @@
-const GETTEXT_DOMAIN = 'my-indicator-extension';
-
-const {GObject, St, GLib, Clutter, PangoCairo, Pango} = imports.gi;
-
-const Gettext = imports.gettext.domain(GETTEXT_DOMAIN);
-const _ = Gettext.gettext;
+const { GObject, St, GLib, Clutter, PangoCairo, Pango } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
-const Main = imports.ui.main;
-const PanelMenu = imports.ui.panelMenu;
-const PopupMenu = imports.ui.popupMenu;
-const ByteArray = imports.byteArray;
-const Cairo		 = imports.cairo;
+const Main			 = imports.ui.main;
+const PanelMenu		 = imports.ui.panelMenu;
+const PopupMenu		 = imports.ui.popupMenu;
+const ByteArray		 = imports.byteArray;
+const Cairo			 = imports.cairo;
+const Me			 = ExtensionUtils.getCurrentExtension();
 
-let monitor = Main.layoutManager.primaryMonitor;
+const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
+const _		  = Gettext.gettext;
+
+let monitor	 = Main.layoutManager.primaryMonitor;
 let lastDown = 0, lastUp = 0;
 let speedDown = 0, speedUp = 0;
 let timeout;
-let speedText = '';
-const gapTime = 3;
+const gapTime = 2;
 let xFloat;
-let size = 100;
-const sMax = 4000000; //最高为4MB/s
-const mcolor = 'green';
+let size   = 100;
+const sMax = 20e6;	//最高为20MB/s
 
-const Indicator =
-    GObject.registerClass(class Indicator extends PanelMenu.Button {
-      _init() {
-        super._init(0.0, _('My Shiny Indicator'));
+const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button {
+	_init() {
+		super._init(0.0, _('My Shiny Indicator'));
 
-        this.add_child(new St.Icon({
-          icon_name : 'face-smile-symbolic',
-          style_class : 'system-status-icon',
-        }));
-        this.background_color = Clutter.Color.from_string(mcolor)[1];
+		const stock_icon = new St.Icon({ icon_name : 'mail-send-symbolic', icon_size : 30 });
+		this.add_child(stock_icon);
 
-        this.connect("button-press-event", (actor, event) => {
-          xFloat.visible = !xFloat.visible;
-          this.background_color =
-              Clutter.Color.from_string(xFloat.visible ? mcolor : "black")[1];
-        });
+		this.connect("button-press-event", (actor, event) => {
+			xFloat.visible = !xFloat.visible;
+			stock_icon.set_icon_name(xFloat.visible ? "mail-send-symbolic" : "media-playback-pause-symbolic");
+		});
 
-        xFloat = new Clutter.Actor({
-        //~ xFloat = new St.Bin({
-          //~ style : 'background-color: '+mcolor,
-          reactive : true,
-          //~ can_focus : true,
-          //~ track_hover : true,
-          width : size,
-          height : size,
-        });
+		xFloat = new Clutter.Actor({
+			reactive : true,
+			width : size,
+			height : size,
+		});
 
-        this._canvas = new Clutter.Canvas();
-        this._canvas.connect('draw', this.on_draw.bind(this));
-        this._canvas.invalidate();
-        this._canvas.set_size(size, size);
-        xFloat.set_size(size, size);
-        xFloat.set_content(this._canvas);
-        this._canvas.invalidate();
+		this._canvas = new Clutter.Canvas();
+		this._canvas.connect('draw', this.on_draw.bind(this));
+		this._canvas.invalidate();
+		this._canvas.set_size(size, size);
+		xFloat.set_size(size, size);
+		xFloat.set_content(this._canvas);
+		this._canvas.invalidate();
 
-        xFloat.set_position(monitor.width - size,
-                            monitor.height - size); // left-down corner.
+		xFloat.set_position(monitor.width - size,
+			monitor.height - size);	 // left-down corner.
 
-        xFloat.connect("button-press-event",
-                       (a) => { this.horizontalMove(a); });
+		xFloat.connect("button-press-event",
+			(a) => { this.horizontalMove(a); });
+	}
 
-      }
+	setcolor(ctx, colorstr, alpha) {
+		const [, cc] = Clutter.Color.from_string(colorstr);
+		ctx.setSourceRGBA(cc.red, cc.green, cc.blue, alpha);
+	}
 
-      setcolor(ctx, colorstr, alpha) {
-        const [, cc] = Clutter.Color.from_string(colorstr);
-        ctx.setSourceRGBA(cc.red, cc.green, cc.blue, alpha);
-      }
+	on_draw(canvas, ctx, width, height) {
+		ctx.setOperator(Cairo.Operator.CLEAR);
+		ctx.paint();
 
-      on_draw(canvas, ctx, width, height) {
-        ctx.setOperator(Cairo.Operator.CLEAR);
-        ctx.paint();
+		ctx.setOperator(Cairo.Operator.SOURCE);
+		ctx.translate(size / 2, size / 2);
+		this.setcolor(ctx, "black", 1);	 //底色
+		ctx.arc(0, 0, size / 2 - size / 20, 0, 2 * Math.PI);
+		ctx.fill();
 
-        ctx.setOperator(Cairo.Operator.SOURCE);
-        ctx.translate(size / 2, size / 2);
-        this.setcolor(ctx, mcolor, 0.8); //底色
-        ctx.arc(0, 0, size / 2 - size / 20, 0, 2 * Math.PI);
-        ctx.fill();
+		this.setcolor(ctx, "white", 1);
+		ctx.moveTo(0, -size / 5);
+		this.align_show(ctx, "⬇ " + this.shortStr(speedDown));
+		ctx.moveTo(0, 0);
+		this.align_show(ctx, "⬆ " + this.shortStr(speedUp));
+	}
 
-        //~ this.setcolor(ctx, "white", 1);
-      //  ctx.showText(speedText); // 会卡死！！
-        //~ const font = "DejaVuSerif Bold 11";
-        //~ let pl = PangoCairo.create_layout(ctx);
-        //~ pl.set_text(speedText, -1);
-        //~ pl.set_text("sss", -1);
-        //~ pl.set_font_description(Pango.FontDescription.from_string(font));
-        //~ PangoCairo.update_layout(ctx, pl);
-        //~ let [w, h] = pl.get_pixel_size();
-        //~ ctx.moveTo(-w / 2, 0); //?????????
-        //~ PangoCairo.show_layout(ctx, pl);
-        //~ canvas.invalidate();
-      }
+	align_show(ctx, showtext, font = "Sans Bold 10") {
+		let pl = PangoCairo.create_layout(ctx);
+		pl.set_text(showtext, -1);
+		pl.set_font_description(Pango.FontDescription.from_string(font));
+		PangoCairo.update_layout(ctx, pl);
+		let [w, h] = pl.get_pixel_size();
+		ctx.relMoveTo(-w / 2, 0);
+		PangoCairo.show_layout(ctx, pl);
+		ctx.relMoveTo(w / 2, 0);
+	}
 
-      horizontalMove(a) {
-        let [xPos, yPos] = a.get_position();
-        let newX = (xPos === 0) ? monitor.width - size : 0;
-        a.rotation_angle_z = 360;
+	horizontalMove(a) {
+		let [xPos, yPos]   = a.get_position();
+		let newX		   = (xPos === 0) ? monitor.width - size : 0;
+		a.rotation_angle_z = 360;
 
-        a.ease({
-          x : newX,
-          rotation_angle_z : 0,
-          duration : 1000,
-          mode : Clutter.AnimationMode.EASE_OUT_BOUNCE,
-          onComplete : () => {}
-        });
-      };
+		a.ease({
+			x : newX,
+			rotation_angle_z : 0,
+			duration : 1000,
+			mode : Clutter.AnimationMode.EASE_OUT_BOUNCE,
+			onComplete : () => {
+				Main.layoutManager._queueUpdateRegions();
+			}
+		});
+	};
 
-      verticalMove(a) {
-        let r = speedDown;
-        if (r > sMax)  r = sMax;
-        //~ const sy = r * Math.PI / 2 / sMax;
-        const h = Math.sin(r * Math.PI / 2 / sMax); // sin的x轴最高点是y=Pi/2
-        let newY = parseInt(monitor.height - size - (monitor.height - size) * h);
-        //~ log("newY: "+newY);
-        //~ log(speedDown+"--"+r+"--"+h+"--"+newY);
-        a.ease({
-          y : newY,
-          duration : 1000,
-          mode : Clutter.AnimationMode.EASE_OUT_BOUNCE,
-          onComplete : () => {}
-        });
-      };
+	verticalMove(a) {
+		let r = speedDown;
+		if (r > sMax) r = sMax;
+		const h	 = Math.sin(r * Math.PI / 2 / sMax);  // sin的x轴最高点是y=Pi/2
+		let newY = parseInt(monitor.height - size - (monitor.height - size) * h);
+		a.ease({
+			y : newY,
+			duration : 1000,
+			mode : Clutter.AnimationMode.EASE_OUT_BOUNCE,
+			onComplete : () => {}
+		});
+	};
 
-      parseSpeed() {
-        try {
-          const [ok, content] = GLib.file_get_contents('/proc/net/dev');
-          const lines = ByteArray.toString(content).split("\n").filter(
-              s => s.indexOf(":") > 0 && s.indexOf("lo:") < 0);
-          for (let i of lines) {
-            const p = i.split(/\W+/);
-            if (p[1] == 0)
-              continue;
-            //~ log("----------------------");
-            //~ log(p[0]+" -- "+p[1]+" -- "+p[9]);
-            if (lastDown == 0)
-              lastDown = p[1];
-            if (lastUp == 0)
-              lastUp = p[9];
-            speedDown = (p[1] - lastDown) / gapTime;
-            speedUp = (p[9] - lastUp) / gapTime;
-            lastDown = p[1];
-            lastUp = p[9];
-            speedText = "⬇ " + this.shortStr(speedDown) + "\n⬆ " +
-                        this.shortStr(speedUp);
-            //~ log(speedDown+" - "+speedText);
-            //~ log(speedDown);
-            if (xFloat.visible)
-              this.verticalMove(xFloat);
-            break;
-          }
+	parseSpeed() {
+		try {
+			const [ok, content] = GLib.file_get_contents('/proc/net/dev');
+			const lines			= ByteArray.toString(content).split("\n").filter(
+						s => s.indexOf(":") > 0 && s.indexOf("lo:") < 0);
+			for (let i of lines) {
+				const p = i.split(/\W+/);
+				if (p[1] == 0)
+					continue;
+				if (lastDown == 0)
+					lastDown = p[1];
+				if (lastUp == 0)
+					lastUp = p[9];
+				speedDown = (p[1] - lastDown) / gapTime;
+				speedUp	  = (p[9] - lastUp) / gapTime;
+				lastDown  = p[1];
+				lastUp	  = p[9];
+				if (xFloat.visible) {
+					this._canvas.invalidate();
+					this.verticalMove(xFloat);
+				}
+				break;
+			}
 
-        } catch (e) {
-          log(e);
-        }
-      };
+		} catch (e) {
+			log(e);
+		}
+	};
 
-      shortStr(i) {
-        let o;
-        if (i > 1000000000) {
-          o = (i / 1000000000).toFixed(2);
-          return o + "GB/s";
-        }
-        if (i > 1000000) {
-          o = (i / 1000000).toFixed(2);
-          return o + "MB/s";
-        }
-        if (i > 1000) {
-          o = (i / 1000).toFixed(2);
-          return o + "KB/s";
-        }
-        return i.toFixed(2) + "B/s";
-      };
-    });
+	shortStr(i) {
+		let o;
+		if (i > 1000000000) {
+			o = (i / 1000000000).toFixed(1);
+			return o + "GB/s";
+		}
+		if (i > 1000000) {
+			o = (i / 1000000).toFixed(1);
+			return o + "MB/s";
+		}
+		if (i > 1000) {
+			o = (i / 1000).toFixed(1);
+			return o + "KB/s";
+		}
+		return i.toFixed(0) + "B/s";
+	};
+});
 
 class Extension {
-  constructor(uuid) {
-    this._uuid = uuid;
+	constructor(uuid) {
+		this._uuid = uuid;
 
-    ExtensionUtils.initTranslations(GETTEXT_DOMAIN);
-  }
+		ExtensionUtils.initTranslations();
+	}
 
-  enable() {
-    this._indicator = new Indicator();
-    Main.panel.addToStatusArea(this._uuid, this._indicator);
-    timeout = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, gapTime, () => {
-      this._indicator.parseSpeed();
-      return GLib.SOURCE_CONTINUE;
-    });
-    Main.layoutManager.addChrome(xFloat, {
-      affectsInputRegion : true,
-      trackFullscreen : true,
-    });
-  }
+	enable() {
+		this._indicator = new Indicator();
+		Main.panel.addToStatusArea(this._uuid, this._indicator);
+		timeout = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, gapTime, () => {
+			this._indicator.parseSpeed();
+			return GLib.SOURCE_CONTINUE;
+		});
+		Main.layoutManager.addChrome(xFloat, {
+			affectsInputRegion : true,
+			trackFullscreen : true,
+		});
+	}
 
-  disable() {
-    if (timeout) {
-      GLib.source_remove(timeout);
-      timeout = null;
-    }
-    Main.layoutManager.removeChrome(xFloat);
-    this._indicator.destroy();
-    this._indicator = null;
-  }
+	disable() {
+		if (timeout) {
+			GLib.source_remove(timeout);
+			timeout = null;
+		}
+		Main.layoutManager.removeChrome(xFloat);
+		this._indicator.destroy();
+		this._indicator = null;
+	}
 }
 
 function init(meta) { return new Extension(meta.uuid); }
