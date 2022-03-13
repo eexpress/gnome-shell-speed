@@ -1,23 +1,3 @@
-/* extension.js
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- * SPDX-License-Identifier: GPL-2.0-or-later
- */
-
-/* exported init */
-
 const GETTEXT_DOMAIN = 'my-indicator-extension';
 
 const {GObject, St, GLib, Clutter, PangoCairo, Pango} = imports.gi;
@@ -62,7 +42,7 @@ const Indicator =
 
         //~ xFloat = new Clutter.Actor({
         xFloat = new St.Bin({
-          //~ style : 'background-color: '+mcolor,
+          style : 'background-color: '+mcolor,
           reactive : true,
           //~ can_focus : true,
           //~ track_hover : true,
@@ -71,7 +51,7 @@ const Indicator =
         });
 
         this._canvas = new Clutter.Canvas();
-        this._canvas.connect('draw', this.on_draw.bind(this));
+        //~ this._canvas.connect('draw', this.on_draw.bind(this));
         this._canvas.invalidate();
         this._canvas.set_size(size, size);
         xFloat.set_size(size, size);
@@ -101,7 +81,7 @@ const Indicator =
         ctx.arc(0, 0, size / 2 - size / 20, 0, 2 * Math.PI);
         ctx.fill();
 
-        this.setcolor(ctx, "white", 1);
+        //~ this.setcolor(ctx, "white", 1);
       //  ctx.showText(speedText); // 会卡死！！
         //~ const font = "DejaVuSerif Bold 11";
         //~ let pl = PangoCairo.create_layout(ctx);
@@ -112,7 +92,7 @@ const Indicator =
         //~ let [w, h] = pl.get_pixel_size();
         //~ ctx.moveTo(-w / 2, 0); //?????????
         //~ PangoCairo.show_layout(ctx, pl);
-        canvas.invalidate();
+        //~ canvas.invalidate();
       }
 
       horizontalMove(a) {
@@ -131,10 +111,13 @@ const Indicator =
 
       verticalMove(a) {
         let r = speedDown;
+        log(r);
         if (r > sMax)  r = sMax;
-        const h = Math.sin(r * Math.PI / 2 / sMax); // sin的x轴最高点是y=Pi/2
-        let newY = (monitor.height - size) * h;
-        log("newY: "+newY);
+        const sy = r * Math.PI / 2 / sMax;
+        log(sy);
+        //~ const h = Math.sin(r * Math.PI / 2 / sMax); // sin的x轴最高点是y=Pi/2
+        //~ let newY = (monitor.height - size) * h;
+        //~ log("newY: "+newY);
         //~ log(speedDown+"--"+r+"--"+h+"--"+newY);
         //~ log(newY);
         //~ a.ease({
@@ -168,8 +151,8 @@ const Indicator =
                         this.shortStr(speedUp);
             //~ log(speedDown+" - "+speedText);
             //~ log(speedDown);
-            if (xFloat.visible)
-              this.verticalMove(xFloat);
+            //~ if (xFloat.visible)
+              //~ this.verticalMove(xFloat);
             break;
           }
 
