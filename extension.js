@@ -11,14 +11,14 @@ const Me			 = ExtensionUtils.getCurrentExtension();
 const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
 const _		  = Gettext.gettext;
 
-let monitor	 = Main.layoutManager.primaryMonitor;
+const monitor = Main.layoutManager.primaryMonitor;
 let lastDown = 0, lastUp = 0;
 let speedDown = 0, speedUp = 0;
 let timeout;
-const gapTime = 2;
 let xFloat;
-let size   = 100;
-const sMax = 10e6;	//最高为10MB/s
+const gapTime = 2;
+const size	  = 100;
+const sMax	  = 10e6;  //最高为10MB/s
 
 const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button {
 	_init() {
@@ -40,13 +40,10 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
 
 		this._canvas = new Clutter.Canvas();
 		this._canvas.connect('draw', this.on_draw.bind(this));
-		this._canvas.invalidate();
 		this._canvas.set_size(size, size);
 		xFloat.set_size(size, size);
 		xFloat.set_content(this._canvas);
-		this._canvas.invalidate();
-
-		xFloat.set_position(0, monitor.height - size);	 // left-down corner.
+		xFloat.set_position(0, monitor.height - size);	// left-down corner.
 
 		xFloat.connect("button-press-event",
 			(a) => { this.horizontalMove(a); });
@@ -95,9 +92,6 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
 			rotation_angle_z : 0,
 			duration : 1000,
 			mode : Clutter.AnimationMode.EASE_OUT_BOUNCE,
-			onComplete : () => {
-				Main.layoutManager._queueUpdateRegions();
-			}
 		});
 	};
 
@@ -110,7 +104,6 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
 			y : newY,
 			duration : 1000,
 			mode : Clutter.AnimationMode.EASE_OUT_BOUNCE,
-			onComplete : () => {}
 		});
 	};
 
@@ -145,12 +138,12 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
 
 	shortStr(i) {
 		let o;
-		if (i > 1000000000) {
-			o = (i / 1000000000).toFixed(1);
+		if (i > 1e9) {
+			o = (i / 1e9).toFixed(1);
 			return o + "GB/s";
 		}
-		if (i > 1000000) {
-			o = (i / 1000000).toFixed(1);
+		if (i > 1e6) {
+			o = (i / 1e6).toFixed(1);
 			return o + "MB/s";
 		}
 		if (i > 1000) {
