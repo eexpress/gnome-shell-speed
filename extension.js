@@ -20,7 +20,7 @@ let speedText = '';
 const gapTime = 3;
 let xFloat;
 let size = 100;
-const sMax = 1000000; //最高为1MB/s
+const sMax = 4000000; //最高为4MB/s
 const mcolor = 'green';
 
 const Indicator =
@@ -40,9 +40,9 @@ const Indicator =
               Clutter.Color.from_string(xFloat.visible ? mcolor : "black")[1];
         });
 
-        //~ xFloat = new Clutter.Actor({
-        xFloat = new St.Bin({
-          style : 'background-color: '+mcolor,
+        xFloat = new Clutter.Actor({
+        //~ xFloat = new St.Bin({
+          //~ style : 'background-color: '+mcolor,
           reactive : true,
           //~ can_focus : true,
           //~ track_hover : true,
@@ -51,7 +51,7 @@ const Indicator =
         });
 
         this._canvas = new Clutter.Canvas();
-        //~ this._canvas.connect('draw', this.on_draw.bind(this));
+        this._canvas.connect('draw', this.on_draw.bind(this));
         this._canvas.invalidate();
         this._canvas.set_size(size, size);
         xFloat.set_size(size, size);
@@ -111,21 +111,18 @@ const Indicator =
 
       verticalMove(a) {
         let r = speedDown;
-        log(r);
         if (r > sMax)  r = sMax;
-        const sy = r * Math.PI / 2 / sMax;
-        log(sy);
-        //~ const h = Math.sin(r * Math.PI / 2 / sMax); // sin的x轴最高点是y=Pi/2
-        //~ let newY = (monitor.height - size) * h;
+        //~ const sy = r * Math.PI / 2 / sMax;
+        const h = Math.sin(r * Math.PI / 2 / sMax); // sin的x轴最高点是y=Pi/2
+        let newY = parseInt(monitor.height - size - (monitor.height - size) * h);
         //~ log("newY: "+newY);
         //~ log(speedDown+"--"+r+"--"+h+"--"+newY);
-        //~ log(newY);
-        //~ a.ease({
-          //~ y : newY,
-          //~ duration : 1000,
-          //~ mode : Clutter.AnimationMode.EASE_OUT_BOUNCE,
-          //~ onComplete : () => {}
-        //~ });
+        a.ease({
+          y : newY,
+          duration : 1000,
+          mode : Clutter.AnimationMode.EASE_OUT_BOUNCE,
+          onComplete : () => {}
+        });
       };
 
       parseSpeed() {
@@ -151,8 +148,8 @@ const Indicator =
                         this.shortStr(speedUp);
             //~ log(speedDown+" - "+speedText);
             //~ log(speedDown);
-            //~ if (xFloat.visible)
-              //~ this.verticalMove(xFloat);
+            if (xFloat.visible)
+              this.verticalMove(xFloat);
             break;
           }
 
