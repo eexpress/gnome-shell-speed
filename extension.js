@@ -16,9 +16,9 @@ let lastDown = 0, lastUp = 0;
 let speedDown = 0, speedUp = 0;
 let timeout;
 let xFloat;
-const gapTime = 2;
+const gapTime = 3;
 const size	  = 100;
-const sMax	  = 10e6;  //最高为10MB/s
+const sMax	  = 20e6;  //最高为10MB/s
 
 const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button {
 	_init() {
