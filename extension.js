@@ -18,7 +18,7 @@ let timeout;
 let xFloat;
 const gapTime = 3;
 const size	  = 100;
-const sMax	  = 20e6;  //最高为10MB/s
+const sMax	  = 20e6;  //最高速度
 
 const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button {
 	_init() {
@@ -33,6 +33,7 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
 		});
 
 		xFloat = new Clutter.Actor({
+			name: 'xFloat',
 			reactive : true,
 			width : size,
 			height : size,
@@ -46,7 +47,10 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
 		xFloat.set_position(0, monitor.height - size);	// left-down corner.
 
 		xFloat.connect("button-press-event",
-			(a) => { this.horizontalMove(a); });
+			(a) => {
+				this.horizontalMove(a);
+				return Clutter.EVENT_STOP;
+			});
 	}
 
 	setcolor(ctx, colorstr, alpha) {
@@ -92,6 +96,9 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
 			rotation_angle_z : 0,
 			duration : 1000,
 			mode : Clutter.AnimationMode.EASE_OUT_BOUNCE,
+			//~ onComplete : () => {
+				//~ Main.layoutManager._queueUpdateRegions();
+			//~ }
 		});
 	};
 
@@ -104,6 +111,9 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
 			y : newY,
 			duration : 1000,
 			mode : Clutter.AnimationMode.EASE_OUT_BOUNCE,
+			//~ onComplete : () => {
+				//~ Main.layoutManager._queueUpdateRegions();
+			//~ }
 		});
 	};
 
@@ -169,8 +179,8 @@ class Extension {
 			return GLib.SOURCE_CONTINUE;
 		});
 		Main.layoutManager.addChrome(xFloat, {
-			affectsInputRegion : true,
-			trackFullscreen : true,
+			//~ affectsInputRegion : true,
+			//~ trackFullscreen : true, //任何菜单导致Actor可见
 		});
 	}
 
