@@ -24,7 +24,7 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
 	_init() {
 		super._init(0.0, _('Screen Net Speed'));
 
-		const stock_icon = new St.Icon({ icon_name : 'mail-send-symbolic', icon_size : 30 });
+		const stock_icon = new St.Icon({ icon_name : 'mail-send-symbolic', style_class : 'system-status-icon' });
 		this.add_child(stock_icon);
 
 		this.connect("button-press-event", (actor, event) => {
