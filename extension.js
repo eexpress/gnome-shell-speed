@@ -28,7 +28,7 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
 		const stock_icon = new St.Icon({ icon_name : 'mail-send-symbolic', style_class : 'system-status-icon' });
 		this.add_child(stock_icon);
 
-		this.svgindex = 1;
+		this.svgindex = ~~(Math.random() * 8) + 1;
 
 		this.connect("button-press-event", (actor, event) => {
 			xFloat.visible = !xFloat.visible;

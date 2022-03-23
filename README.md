@@ -6,6 +6,6 @@
 - 鼠标在面板图标上滚动，可以改变形状。
 
 - You can click it to have fun and pass the time. Can be turned on / off at any time.
-- Scroll Mouse on panel icon, can change the sharp.
+- Scroll Mouse on panel icon, can change the shape.
 
 ![](screenshot.png)
