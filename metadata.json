@@ -1,9 +1,11 @@
 {
   "name": "Screen Net Speed",
-  "description": "* Animation net speed show on the screen. You can click it to have fun and pass the time. Can be turned on / off at any time.",
+  "description": "* Animation net speed show on the screen. You can click it to have fun and pass the time. Can be turned on / off at any time.\nScroll Mouse on panel icon, can change the sharp.",
   "uuid": "speed@eexpss.gmail.com",
   "gettext-domain": "screen-net-speed",
   "shell-version": [
-    "40"
+    "40",
+    "41",
+    "42"
   ]
 }

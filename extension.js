@@ -1,15 +1,15 @@
-const { GObject, St, GLib, Clutter, PangoCairo, Pango } = imports.gi;
+const { GObject, St, GLib, Rsvg, Clutter, PangoCairo, Pango } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
-const Main			 = imports.ui.main;
-const PanelMenu		 = imports.ui.panelMenu;
-const PopupMenu		 = imports.ui.popupMenu;
-const ByteArray		 = imports.byteArray;
-const Cairo			 = imports.cairo;
-const Me			 = ExtensionUtils.getCurrentExtension();
+const Main = imports.ui.main;
+const PanelMenu = imports.ui.panelMenu;
+const PopupMenu = imports.ui.popupMenu;
+const ByteArray = imports.byteArray;
+const Cairo = imports.cairo;
+const Me = ExtensionUtils.getCurrentExtension();
 
 const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
-const _		  = Gettext.gettext;
+const _ = Gettext.gettext;
 
 const monitor = Main.layoutManager.primaryMonitor;
 let lastDown = 0, lastUp = 0;
@@ -17,8 +17,9 @@ let speedDown = 0, speedUp = 0;
 let timeout;
 let xFloat;
 const gapTime = 3;
-const size	  = 100;
-const sMax	  = 20e6;  //最高速度
+const size = 100;
+const sMax = 20e6;	//最高速度
+const svgpath = Me.path + '/img/';
 
 const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button {
 	_init() {
@@ -27,13 +28,29 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
 		const stock_icon = new St.Icon({ icon_name : 'mail-send-symbolic', style_class : 'system-status-icon' });
 		this.add_child(stock_icon);
 
+		this.svgindex = 1;
+
 		this.connect("button-press-event", (actor, event) => {
 			xFloat.visible = !xFloat.visible;
 			stock_icon.set_icon_name(xFloat.visible ? "mail-send-symbolic" : "media-playback-pause-symbolic");
 		});
 
+		this.connect("scroll-event", (actor, event) => {
+			switch (event.get_scroll_direction()) {
+			case Clutter.ScrollDirection.UP:
+				this.svgindex++;
+				if (this.svgindex > 9) { this.svgindex = 1; }
+				break;
+			case Clutter.ScrollDirection.DOWN:
+				this.svgindex--;
+				if (this.svgindex < 1) { this.svgindex = 9; }
+				break;
+			}
+			this._canvas.invalidate();
+		});
+
 		xFloat = new Clutter.Actor({
-			name: 'xFloat',
+			name : 'xFloat',
 			reactive : true,
 			width : size,
 			height : size,
@@ -61,13 +78,15 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
 	on_draw(canvas, ctx, width, height) {
 		ctx.setOperator(Cairo.Operator.CLEAR);
 		ctx.paint();
-
 		ctx.setOperator(Cairo.Operator.SOURCE);
-		ctx.translate(size / 2, size / 2);
-		this.setcolor(ctx, "black", 1);	 //底色
-		ctx.arc(0, 0, size / 2 - size / 20, 0, 2 * Math.PI);
-		ctx.fill();
 
+		try {
+			const hd = Rsvg.Handle.new_from_file(svgpath + "r" + this.svgindex + ".svg");
+			const vp = new Rsvg.Rectangle({ x : 0, y : 0, width : size, height : size });
+			hd.render_document(ctx, vp);
+		} catch (e) { throw e; }
+
+		ctx.translate(size / 2, size / 2);
 		this.setcolor(ctx, "white", 1);
 		ctx.moveTo(0, -size / 5);
 		this.align_show(ctx, "⬇ " + this.shortStr(speedDown));
@@ -87,8 +106,8 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
 	}
 
 	horizontalMove(a) {
-		let [xPos, yPos]   = a.get_position();
-		let newX		   = (xPos === 0) ? monitor.width - size : 0;
+		let [xPos, yPos] = a.get_position();
+		let newX = (xPos === 0) ? monitor.width - size : 0;
 		a.rotation_angle_z = 360;
 
 		a.ease({
@@ -97,7 +116,7 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
 			duration : 1000,
 			mode : Clutter.AnimationMode.EASE_OUT_BOUNCE,
 			//~ onComplete : () => {
-				//~ Main.layoutManager._queueUpdateRegions();
+			//~ Main.layoutManager._queueUpdateRegions();
 			//~ }
 		});
 	};
@@ -105,14 +124,14 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
 	verticalMove(a) {
 		let r = speedDown;
 		if (r > sMax) r = sMax;
-		const h	 = Math.sin(r * Math.PI / 2 / sMax);  // sin的x轴最高点是y=Pi/2
+		const h = Math.sin(r * Math.PI / 2 / sMax);	 // sin的x轴最高点是y=Pi/2
 		let newY = parseInt(monitor.height - size - (monitor.height - size) * h);
 		a.ease({
 			y : newY,
 			duration : 1000,
 			mode : Clutter.AnimationMode.EASE_OUT_BOUNCE,
 			//~ onComplete : () => {
-				//~ Main.layoutManager._queueUpdateRegions();
+			//~ Main.layoutManager._queueUpdateRegions();
 			//~ }
 		});
 	};
@@ -120,8 +139,8 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
 	parseSpeed() {
 		try {
 			const [ok, content] = GLib.file_get_contents('/proc/net/dev');
-			const lines			= ByteArray.toString(content).split("\n").filter(
-						s => s.indexOf(":") > 0 && s.indexOf("lo:") < 0);
+			const lines = ByteArray.toString(content).split("\n").filter(
+				s => s.indexOf(":") > 0 && s.indexOf("lo:") < 0);
 			for (let i of lines) {
 				const p = i.split(/\W+/);
 				if (p[1] == 0)
@@ -131,9 +150,9 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
 				if (lastUp == 0)
 					lastUp = p[9];
 				speedDown = (p[1] - lastDown) / gapTime;
-				speedUp	  = (p[9] - lastUp) / gapTime;
-				lastDown  = p[1];
-				lastUp	  = p[9];
+				speedUp = (p[9] - lastUp) / gapTime;
+				lastDown = p[1];
+				lastUp = p[9];
 				if (xFloat.visible) {
 					this._canvas.invalidate();
 					this.verticalMove(xFloat);
@@ -179,9 +198,9 @@ class Extension {
 			return GLib.SOURCE_CONTINUE;
 		});
 		Main.layoutManager.addChrome(xFloat, {
-			//~ affectsInputRegion : true,
-			//~ trackFullscreen : true, //任何菜单导致Actor可见
-		});
+												 //~ affectsInputRegion : true,
+												 //~ trackFullscreen : true, //任何菜单导致Actor可见
+											 });
 	}
 
 	disable() {
