@@ -20,7 +20,8 @@ const gapTime = 3;
 const size = 100;
 const sMax = 20e6;	//最高速度
 const svgpath = Me.path + '/img/';
-const micon = 'gnome-netstatus-txrx';	// 'mail-send-symbolic'
+//~ const micon = 'gnome-netstatus-txrx';	// 'mail-send-symbolic'
+const micon = 'mail-send-symbolic-rtl';
 
 const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button {
 	_init() {
