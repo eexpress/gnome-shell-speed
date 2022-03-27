@@ -20,19 +20,20 @@ const gapTime = 3;
 const size = 100;
 const sMax = 20e6;	//最高速度
 const svgpath = Me.path + '/img/';
+const micon = 'gnome-netstatus-txrx';	// 'mail-send-symbolic'
 
 const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button {
 	_init() {
 		super._init(0.0, _('Screen Net Speed'));
 
-		const stock_icon = new St.Icon({ icon_name : 'mail-send-symbolic', style_class : 'system-status-icon' });
+		const stock_icon = new St.Icon({ icon_name : micon, style_class : 'system-status-icon' });
 		this.add_child(stock_icon);
 
 		this.svgindex = ~~(Math.random() * 8) + 1;
 
 		this.connect("button-press-event", (actor, event) => {
 			xFloat.visible = !xFloat.visible;
-			stock_icon.set_icon_name(xFloat.visible ? "mail-send-symbolic" : "media-playback-pause-symbolic");
+			stock_icon.set_icon_name(xFloat.visible ? micon : "media-playback-pause-symbolic");
 		});
 
 		this.connect("scroll-event", (actor, event) => {
