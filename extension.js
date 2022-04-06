@@ -30,7 +30,7 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
 		const stock_icon = new St.Icon({ icon_name : micon, style_class : 'system-status-icon' });
 		this.add_child(stock_icon);
 
-		this.svgindex = ~~(Math.random() * 7) + 2;
+		this.svgindex = ~~(Math.random() * 4) + 5;
 
 		this.connect("button-press-event", (actor, event) => {
 			xFloat.visible = !xFloat.visible;
