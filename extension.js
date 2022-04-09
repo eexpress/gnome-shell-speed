@@ -200,9 +200,9 @@ class Extension {
 			return GLib.SOURCE_CONTINUE;
 		});
 		Main.layoutManager.addChrome(xFloat, {
-												 //~ affectsInputRegion : true,
-												 //~ trackFullscreen : true, //任何菜单导致Actor可见
-											 });
+			//~ affectsInputRegion : true,
+			//~ trackFullscreen : true, //任何菜单导致Actor可见
+		});
 	}
 
 	disable() {
