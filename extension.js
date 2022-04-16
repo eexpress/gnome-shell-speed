@@ -1,4 +1,4 @@
-const { GObject, St, GLib, Rsvg, Clutter, PangoCairo, Pango } = imports.gi;
+const { GObject, St, GLib, Gio, Rsvg, Clutter, PangoCairo, Pango } = imports.gi;
 
 const ExtensionUtils = imports.misc.extensionUtils;
 const Main = imports.ui.main;
@@ -16,16 +16,18 @@ let lastDown = 0, lastUp = 0;
 let speedDown = 0, speedUp = 0;
 let timeout;
 let xFloat;
-const gapTime = 3;
+const gapTime = 2;
 const size = 100;
 const sMax = 20e6;	//最高速度
-const svgpath = Me.path + '/img/';
+//~ const svgpath = Me.path + '/img/';
 //~ const micon = 'gnome-netstatus-txrx';	// 'mail-send-symbolic'
 const micon = 'mail-send-symbolic-rtl';
 
 const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button {
 	_init() {
 		super._init(0.0, _('Screen Net Speed'));
+		this.resource = Gio.Resource.load(Me.path + '/res.gresource');
+		this.resource._register();
 
 		const stock_icon = new St.Icon({ icon_name : micon, style_class : 'system-status-icon' });
 		this.add_child(stock_icon);
@@ -39,11 +41,11 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
 
 		this.connect("scroll-event", (actor, event) => {
 			switch (event.get_scroll_direction()) {
-			case Clutter.ScrollDirection.UP:
+			case Clutter.ScrollDirection.DOWN:
 				this.svgindex++;
 				if (this.svgindex > 9) { this.svgindex = 1; }
 				break;
-			case Clutter.ScrollDirection.DOWN:
+			case Clutter.ScrollDirection.UP:
 				this.svgindex--;
 				if (this.svgindex < 1) { this.svgindex = 9; }
 				break;
@@ -83,7 +85,9 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
 		ctx.setOperator(Cairo.Operator.SOURCE);
 
 		try {
-			const hd = Rsvg.Handle.new_from_file(svgpath + "r" + this.svgindex + ".svg");
+			const ff = Gio.File.new_for_uri("resource:///img/r" + this.svgindex + ".svg");
+			const hd = Rsvg.Handle.new_from_gfile_sync(ff, Rsvg.HandleFlags.FLAGS_NONE, null);
+			//~ const hd = Rsvg.Handle.new_from_file(svgpath + "r" + this.svgindex + ".svg");
 			const vp = new Rsvg.Rectangle({ x : 0, y : 0, width : size, height : size });
 			hd.render_document(ctx, vp);
 		} catch (e) { throw e; }
@@ -211,6 +215,7 @@ class Extension {
 			timeout = null;
 		}
 		Main.layoutManager.removeChrome(xFloat);
+		xFloat = null;
 		this._indicator.destroy();
 		this._indicator = null;
 	}
