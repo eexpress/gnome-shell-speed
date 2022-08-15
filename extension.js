@@ -20,8 +20,7 @@ const gapTime = 2;
 const size = 100;
 const sMax = 20e6;	//最高速度
 //~ const svgpath = Me.path + '/img/';
-//~ const micon = 'gnome-netstatus-txrx';	// 'mail-send-symbolic'
-const micon = 'mail-send-symbolic-rtl';
+const micon = 'power-profile-balanced-symbolic';
 
 const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button {
 	_init() {
@@ -33,7 +32,6 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
 		this.add_child(stock_icon);
 
 		this.svgindex = ~~(Math.random() * 4) + 5;
-		this.bgindex = 0;
 
 		this.connect("button-press-event", (actor, event) => {
 			xFloat.visible = !xFloat.visible;
@@ -41,23 +39,12 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
 		});
 
 		this.connect("scroll-event", (actor, event) => {
-			const altkey = event.get_state() & Clutter.ModifierType.MOD1_MASK;
 			switch (event.get_scroll_direction()) {
 			case Clutter.ScrollDirection.DOWN:
-				if (altkey) {
-					this.bgindex ++;
-					if (this.bgindex > 4) { this.bgindex = 0; }
-					break;
-				}
 				this.svgindex++;
 				if (this.svgindex > 9) { this.svgindex = 1; }
 				break;
 			case Clutter.ScrollDirection.UP:
-				if (altkey) {
-					this.bgindex --;
-					if (this.bgindex < 0) { this.bgindex = 4; }
-					break;
-				}
 				this.svgindex--;
 				if (this.svgindex < 1) { this.svgindex = 9; }
 				break;
