@@ -21,6 +21,7 @@ const size = parseInt(monitor.height/12);
 const sMax = 20e6;	//最高速度
 //~ const svgpath = Me.path + '/img/';
 const micon = 'power-profile-balanced-symbolic';
+const xicon = 'media-playback-pause-symbolic';
 
 const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button {
 	_init() {
@@ -35,7 +36,7 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
 
 		this.connect("button-press-event", (actor, event) => {
 			xFloat.visible = !xFloat.visible;
-			stock_icon.set_icon_name(xFloat.visible ? micon : "media-playback-pause-symbolic");
+			stock_icon.set_icon_name(xFloat.visible ? micon : xicon);
 		});
 
 		this.connect("scroll-event", (actor, event) => {
