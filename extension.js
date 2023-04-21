@@ -17,7 +17,7 @@ let speedDown = 0, speedUp = 0;
 let timeout;
 let xFloat;
 const gapTime = 2;
-const size = 100;
+const size = parseInt(monitor.height/12);
 const sMax = 20e6;	//最高速度
 //~ const svgpath = Me.path + '/img/';
 const micon = 'power-profile-balanced-symbolic';
@@ -99,7 +99,7 @@ const Indicator = GObject.registerClass(class Indicator extends PanelMenu.Button
 		this.align_show(ctx, "⬆ " + this.shortStr(speedUp));
 	}
 
-	align_show(ctx, showtext, font = "Sans Bold 10") {
+	align_show(ctx, showtext, font = "Sans Bold " + parseInt(size/10)) {
 		let pl = PangoCairo.create_layout(ctx);
 		pl.set_text(showtext, -1);
 		pl.set_font_description(Pango.FontDescription.from_string(font));
