@@ -1,15 +1,32 @@
-const { GObject, St, GLib, Gio, Rsvg, Clutter, PangoCairo, Pango } = imports.gi;
+//~ const { GObject, St, GLib, Gio, Rsvg, Clutter, PangoCairo, Pango } = imports.gi;
 
-const ExtensionUtils = imports.misc.extensionUtils;
-const Main = imports.ui.main;
-const PanelMenu = imports.ui.panelMenu;
-const PopupMenu = imports.ui.popupMenu;
+import GObject from 'gi://GObject';
+import St from 'gi://St';
+import GLib from 'gi://GLib';
+import Gio from 'gi://Gio';
+import Clutter from 'gi://Clutter';
+import Pango from 'gi://Pango';
+import PangoCairo from "gi://PangoCairo";
+import Rsvg from "XXXXXXXXXXXX";
+
+//~ const ExtensionUtils = imports.misc.extensionUtils;
+//~ const Main = imports.ui.main;
+//~ const PanelMenu = imports.ui.panelMenu;
+//~ const PopupMenu = imports.ui.popupMenu;
 const ByteArray = imports.byteArray;
 const Cairo = imports.cairo;
-const Me = ExtensionUtils.getCurrentExtension();
 
-const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
-const _ = Gettext.gettext;
+import * as ExtensionUtils from 'resource:///org/gnome/shell/misc/extensionUtils.js';
+import * as Main from 'resource:///org/gnome/shell/ui/main.js';
+import * as PanelMenu from 'resource:///org/gnome/shell/ui/panelMenu.js';
+import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
+
+const Me = ExtensionUtils.getCurrentExtension();
+//~ const Gettext = imports.gettext.domain(Me.metadata['gettext-domain']);
+//~ const _ = Gettext.gettext;
+import {Extension, gettext as _} from 'resource:///org/gnome/shell/extensions/extension.js';
+
+//~ ---------------------------------------------------------------------------
 
 const monitor = Main.layoutManager.primaryMonitor;
 let lastDown = 0, lastUp = 0;
