@@ -12,7 +12,7 @@
 ---
 Video:
 
-![(mp4)]('https://github.com/eexpress/gs-speed/blob/main/gs-speed.mp4')
+[!(mp4)](https://github.com/eexpress/gs-speed/blob/main/gs-speed.mp4)
 ---
 <video width="444" height="674" controls autoplay muted loop>
   <source src="gs-speed.mp4" type="video/mp4">
