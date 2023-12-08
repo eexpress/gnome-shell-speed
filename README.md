@@ -9,3 +9,7 @@
 - Scroll Mouse on panel icon, can change the shape.
 
 ![](screenshot.png)
+
+<video width="444" height="674" controls>
+  <source src="gs-speed.webm" type="video/webm">
+</video>
