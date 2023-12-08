@@ -10,6 +10,6 @@
 
 ![](screenshot.png)
 
-<video width="444" height="674" controls>
-  <source src="gs-speed.webm" type="video/webm">
+<video width="444" height="674" controls autoplay muted loop>
+  <source src="gs-speed.mp4" type="video/mp4">
 </video>
